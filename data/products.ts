@@ -32,3 +32,12 @@ export const products = Object.freeze<Product[]>([
   { id: 'tapete-antiderrame', name: 'Tapete antiderrame para cocina', price: 32900, img: '/Productos/tapete-antiderrame.png', category: 'Otros' },
   { id: 'organizador-zapatos', name: 'Organizador para zapatos (x6)', price: 49900, img: '/Productos/organizador-zapatos.png', category: 'Organización' },
 ])
+
+export const categories = [
+  "Organización",
+  "Cocina",
+  "Limpieza",
+  "Baño",
+  "Iluminación",
+  "Otros"
+]
