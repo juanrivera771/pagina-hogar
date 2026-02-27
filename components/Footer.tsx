@@ -8,20 +8,10 @@ const BRAND_DARK = '#0F2A43';
 
 export default function Footer() {
   return (
-    <footer className="relative mt-10">
+    <footer className="relative mt-10 overflow-hidden bg-white">
 
-      {/* FONDO SUAVE */}
-      <div className="absolute inset-0 -z-10">
-        <div
-          className="h-full w-full"
-          style={{
-            background:
-              'radial-gradient(1200px 420px at 85% -10%, rgba(102,209,31,.12), transparent 60%), linear-gradient(180deg,#ffffff 0%, #f7fbf3 60%, #ffffff 100%)',
-          }}
-        />
-      </div>
-
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-12">
+      {/* CONTENIDO */}
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 py-12">
         <div className="grid gap-10 md:grid-cols-4">
 
           {/* MARCA */}
@@ -106,6 +96,17 @@ export default function Footer() {
           </div>
         </div>
       </div>
+
+      {/* FONDO DECORATIVO INFERIOR */}
+      <Image
+        src="/fondo-footer.png"
+        alt="Decoración Footer"
+        width={1920}
+        height={300}
+        className="absolute bottom-0 left-0 w-full pointer-events-none select-none"
+        priority
+      />
+
     </footer>
   );
 }
