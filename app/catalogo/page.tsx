@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { products, categories, type Product } from '@/data/products';
 
 const BRAND_GREEN = '#66D11F';
@@ -17,7 +18,16 @@ const moneyFormatter = new Intl.NumberFormat('es-CO', {
 
 const money = (x: number) => moneyFormatter.format(x);
 
+/* ===== helper para comparar sin tildes ===== */
+const normalize = (text: string) =>
+  text
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+
 export default function CatalogoPage() {
+  const searchParams = useSearchParams();
+
   const [q, setQ] = useState('');
   const [sort, setSort] =
     useState<'relevancia' | 'precio-asc' | 'precio-desc'>('relevancia');
@@ -28,6 +38,21 @@ export default function CatalogoPage() {
     () => ['Todas', ...categories],
     []
   );
+
+  /* ===== LEER CATEGORIA DESDE URL ===== */
+  useEffect(() => {
+    const categoriaURL = searchParams.get('categoria');
+
+    if (categoriaURL) {
+      const match = allCategories.find(
+        (c) => normalize(c) === normalize(categoriaURL)
+      );
+
+      if (match) {
+        setCat(match);
+      }
+    }
+  }, [searchParams, allCategories]);
 
   /* ===== FILTRO + ORDEN ===== */
   const filtered = useMemo(() => {

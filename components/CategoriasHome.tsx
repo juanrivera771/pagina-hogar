@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import { useCallback } from 'react';
 
 const categorias = [
-  'Organización',
-  'Cocina',
-  'Limpieza',
-  'Baño',
-  'Iluminación',
-  'Otros',
+  { nombre: 'Organización', slug: 'organizacion' },
+  { nombre: 'Cocina', slug: 'cocina' },
+  { nombre: 'Limpieza', slug: 'limpieza' },
+  { nombre: 'Baño', slug: 'bano' },
+  { nombre: 'Iluminación', slug: 'iluminacion' },
+  { nombre: 'Otros', slug: 'otros' },
 ] as const;
 
 const animaciones = [
@@ -25,10 +25,9 @@ const animaciones = [
 export default function CategoriasHome() {
   const router = useRouter();
 
-  // 🔹 Optimización: evita recrear la función en cada render
   const handleNavigate = useCallback(
-    (categoria: string) => {
-      router.push(`/catalogo?categoria=${encodeURIComponent(categoria)}`);
+    (slug: string) => {
+      router.push(`/catalogo?categoria=${slug}`);
     },
     [router]
   );
@@ -48,7 +47,7 @@ export default function CategoriasHome() {
 
           return (
             <motion.div
-              key={cat}
+              key={cat.slug}
               initial={{ opacity: 0, x: isLeft ? -120 : 120 }}
               whileInView={{ opacity: 1, x: 0 }}
               transition={{
@@ -58,9 +57,9 @@ export default function CategoriasHome() {
               }}
               viewport={{ once: true, amount: 0.3 }}
               className={`${animaciones[index]} will-change-transform`}
-              whileHover={{ y: -6 }} // 🔹 micro-elevación suave
-              whileTap={{ scale: 0.97 }} // 🔹 interacción moderna
-              onClick={() => handleNavigate(cat)}
+              whileHover={{ y: -6 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={() => handleNavigate(cat.slug)}
             >
               <div
                 className="
@@ -77,11 +76,11 @@ export default function CategoriasHome() {
                   relative overflow-hidden
                 "
               >
-                {/* Glow sutil sin afectar tu diseño */}
+                {/* Glow sutil */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-700 bg-gradient-to-br from-green-400/0 via-green-400/0 to-green-400/10" />
 
                 <h3 className="relative font-semibold text-slate-700 text-lg group-hover:text-green-600 transition">
-                  {cat}
+                  {cat.nombre}
                 </h3>
 
                 <div className="relative opacity-0 group-hover:opacity-100 transition duration-300 text-sm mt-4 text-green-600 font-medium">
