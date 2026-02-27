@@ -60,7 +60,7 @@ export default function Footer() {
               <li>
                 <a href="mailto:hola@jxf.co">hola@jxf.co</a>
               </li>
-              <li className="text-slate-500">
+              <li className="text-slate-900">
                 Todos los días · 9:00 — 20:00
               </li>
             </ul>
