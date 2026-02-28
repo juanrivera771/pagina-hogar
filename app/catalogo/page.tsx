@@ -1,15 +1,14 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { products, categories, type Product } from '@/data/products';
+import ProductModal from '@/components/ProductModal';
 
 const BRAND_GREEN = '#66D11F';
 const BRAND_DARK = '#0F2A43';
 
-/* ===== FORMATTER GLOBAL (solo una vez) ===== */
 const moneyFormatter = new Intl.NumberFormat('es-CO', {
   style: 'currency',
   currency: 'COP',
@@ -18,7 +17,6 @@ const moneyFormatter = new Intl.NumberFormat('es-CO', {
 
 const money = (x: number) => moneyFormatter.format(x);
 
-/* ===== helper para comparar sin tildes ===== */
 const normalize = (text: string) =>
   text
     .toLowerCase()
@@ -33,13 +31,13 @@ export default function CatalogoPage() {
     useState<'relevancia' | 'precio-asc' | 'precio-desc'>('relevancia');
   const [cat, setCat] = useState('Todas');
 
-  /* ===== categorías optimizadas (ya vienen calculadas) ===== */
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   const allCategories = useMemo(
     () => ['Todas', ...categories],
     []
   );
 
-  /* ===== LEER CATEGORIA DESDE URL ===== */
   useEffect(() => {
     const categoriaURL = searchParams.get('categoria');
 
@@ -54,7 +52,6 @@ export default function CatalogoPage() {
     }
   }, [searchParams, allCategories]);
 
-  /* ===== FILTRO + ORDEN ===== */
   const filtered = useMemo(() => {
     let items = products.filter((p) =>
       (cat === 'Todas' || p.category === cat) &&
@@ -74,7 +71,7 @@ export default function CatalogoPage() {
     <div className="min-h-dvh bg-white text-slate-900">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
 
-        {/* ===== HEADER ===== */}
+        {/* HEADER */}
         <div className="flex items-center gap-3">
           <Image
             src="/jxf-logo.png"
@@ -91,7 +88,7 @@ export default function CatalogoPage() {
           </h1>
         </div>
 
-        {/* ===== CONTROLES ===== */}
+        {/* CONTROLES */}
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
           <input
             value={q}
@@ -130,12 +127,13 @@ export default function CatalogoPage() {
           </select>
         </div>
 
-        {/* ===== GRID PRODUCTOS ===== */}
+        {/* GRID PRODUCTOS */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {filtered.map((p: Product) => (
             <article
               key={p.id}
-              className="rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition"
+              onClick={() => setSelectedProduct(p)}
+              className="cursor-pointer rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition"
             >
               <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-slate-100">
                 <Image
@@ -147,10 +145,7 @@ export default function CatalogoPage() {
               </div>
 
               <div className="p-4">
-                <h3
-                  className="font-semibold leading-snug line-clamp-2"
-                  title={p.name}
-                >
+                <h3 className="font-semibold leading-snug line-clamp-2">
                   {p.name}
                 </h3>
 
@@ -166,26 +161,17 @@ export default function CatalogoPage() {
                     {p.category}
                   </span>
                 </div>
-
-                <a
-                  href={`https://wa.me/573208709850?text=${encodeURIComponent(
-                    `Hola, quiero este producto: ${p.name} (${money(
-                      p.price
-                    )})`
-                  )}`}
-                  className="mt-3 inline-flex w-full items-center justify-center rounded-xl px-4 py-2 text-sm font-semibold shadow hover:opacity-90"
-                  style={{
-                    backgroundColor: BRAND_GREEN,
-                    color: BRAND_DARK,
-                  }}
-                >
-                  Comprar por WhatsApp
-                </a>
               </div>
             </article>
           ))}
         </div>
       </div>
+
+      {/* MODAL GLOBAL */}
+      <ProductModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+      />
     </div>
   );
 }
