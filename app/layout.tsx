@@ -42,13 +42,21 @@ export const metadata = {
   },
 };
 
+/* ✅ Viewport mejorado para móviles modernos */
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: {
   children: ReactNode;
 }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <body className="bg-white text-slate-900 antialiased selection:bg-lime-400 selection:text-black">
 
         <CartProvider>
@@ -62,10 +70,10 @@ export default function RootLayout({
               {children}
             </main>
 
-            {/* 🔥 CART DRAWER GLOBAL (ESTO FALTABA) */}
+            {/* 🔥 Cart Drawer Global */}
             <CartDrawer />
 
-            {/* 🔥 Botón flotante WhatsApp Premium */}
+            {/* 🔥 Botón flotante WhatsApp */}
             <a
               href="https://wa.me/573208709850?text=Hola%20JXF%20Colombia%2C%20quiero%20comprar%20para%20mi%20hogar"
               aria-label="Chatea por WhatsApp"
@@ -73,14 +81,13 @@ export default function RootLayout({
               rel="noopener noreferrer"
               className="fixed bottom-4 right-4 z-[60] group"
             >
-              {/* Tooltip */}
-              <span className="absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
+              {/* Tooltip solo visible en desktop */}
+              <span className="hidden sm:block absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
                 Escríbenos
               </span>
 
-              {/* Botón */}
               <div
-                className="h-14 w-14 rounded-full shadow-lg ring-1 ring-black/5 grid place-items-center transition-all duration-300 group-hover:scale-110"
+                className="h-14 w-14 rounded-full shadow-lg ring-1 ring-black/5 grid place-items-center transition-all duration-300 group-hover:scale-110 active:scale-95"
                 style={{ backgroundColor: "#25D366" }}
               >
                 <svg viewBox="0 0 24 24" className="h-8 w-8 fill-white">

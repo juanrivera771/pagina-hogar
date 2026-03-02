@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import Image from 'next/image'
 import { Product } from '@/data/products'
 import { useCart } from '@/context/CartContext'
@@ -11,8 +12,22 @@ type Props = {
 }
 
 export default function ProductModal({ product, onClose }: Props) {
-  const { addToCart } = useCart() // 🔥 quitamos openCart
+  const { addToCart }
+ = useCart()
   const { showToast } = useToast()
+
+  // 🔥 Bloquea scroll del body cuando el modal está abierto
+  useEffect(() => {
+    if (product) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [product])
 
   if (!product) return null
 
@@ -30,51 +45,77 @@ export default function ProductModal({ product, onClose }: Props) {
       image: product.img,
     })
 
-    // ❌ eliminado openCart()
-    onClose() // cerramos modal
+    onClose()
   }
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-fadeIn"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl p-6 w-full max-w-md relative shadow-xl"
+        className="
+          bg-white
+          w-full
+          max-w-md
+          max-h-[90vh]
+          overflow-y-auto
+          rounded-2xl
+          shadow-2xl
+          relative
+          animate-scaleIn
+        "
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Botón cerrar */}
         <button
           onClick={onClose}
-          className="absolute top-3 right-4 text-xl font-bold hover:opacity-70"
+          className="absolute top-4 right-4 text-xl font-bold hover:opacity-70 z-10"
         >
           ✕
         </button>
 
-        <div className="relative w-full h-64 mb-4">
+        {/* Imagen */}
+        <div className="relative w-full h-64 sm:h-72">
           <Image
             src={product.img}
             alt={product.name}
             fill
-            className="object-cover rounded-xl"
+            className="object-cover rounded-t-2xl"
           />
         </div>
 
-        <h2 className="text-xl font-bold">{product.name}</h2>
+        {/* Contenido */}
+        <div className="p-6">
+          <h2 className="text-xl sm:text-2xl font-bold">
+            {product.name}
+          </h2>
 
-        <p className="text-lg font-semibold mt-2">
-          ${product.price.toLocaleString()}
-        </p>
+          <p className="text-lg font-semibold mt-2">
+            ${product.price.toLocaleString()}
+          </p>
 
-        <p className="text-sm text-gray-600 mt-3">
-          {product.description}
-        </p>
+          <p className="text-sm text-gray-600 mt-4 leading-relaxed">
+            {product.description}
+          </p>
 
-        <button
-          onClick={handleAddToCart}
-          className="bg-green-500 hover:bg-green-600 text-white w-full mt-5 py-3 rounded-xl transition font-semibold"
-        >
-          Agregar al carrito
-        </button>
+          <button
+            onClick={handleAddToCart}
+            className="
+              bg-green-500 hover:bg-green-600
+              active:scale-[0.98]
+              text-white
+              w-full
+              mt-6
+              py-3
+              rounded-xl
+              transition
+              font-semibold
+            "
+          >
+            Agregar al carrito
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -25,7 +25,6 @@ export default function ProductSlider({ products, title }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  // 🔥 SOLO addToCart (quitamos openCart)
   const { addToCart } = useCart();
   const { showToast } = useToast();
 
@@ -34,7 +33,7 @@ export default function ProductSlider({ products, title }: Props) {
     if (!el) return;
 
     el.scrollBy({
-      left: dir === 'right' ? 360 : -360,
+      left: dir === 'right' ? 320 : -320,
       behavior: 'smooth',
     });
   };
@@ -52,25 +51,24 @@ export default function ProductSlider({ products, title }: Props) {
       price: p.price,
       image: p.img,
     });
-
-    // ❌ Eliminado openCart()
   };
 
   return (
     <>
-      <section className="w-full py-20">
-        <div className="max-w-7xl mx-auto px-6">
+      <section className="w-full py-14 sm:py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {title && (
-            <div className="flex items-center justify-between mb-12">
+            <div className="flex items-center justify-between mb-8 sm:mb-12">
               <h2
-                className="text-3xl md:text-4xl font-bold tracking-tight"
+                className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight"
                 style={{ color: BRAND_DARK }}
               >
                 {title}
               </h2>
 
-              <div className="flex gap-3">
+              {/* Flechas solo desktop */}
+              <div className="hidden md:flex gap-3">
                 <button
                   onClick={() => scroll('left')}
                   className="w-11 h-11 rounded-full border border-slate-300 bg-white/60 backdrop-blur hover:bg-white transition"
@@ -91,9 +89,12 @@ export default function ProductSlider({ products, title }: Props) {
           <div
             ref={containerRef}
             className="
-              flex gap-6 overflow-x-auto
-              scroll-smooth snap-x snap-mandatory
+              flex gap-4 sm:gap-6
+              overflow-x-auto
+              scroll-smooth
+              snap-x snap-mandatory
               scrollbar-hide
+              [-webkit-overflow-scrolling:touch]
             "
           >
             {products.map((p) => (
@@ -148,6 +149,7 @@ export default function ProductSlider({ products, title }: Props) {
                       font-semibold text-sm
                       transition-all duration-300
                       hover:scale-[1.02]
+                      active:scale-[0.98]
                     "
                     style={{
                       backgroundColor: BRAND_GREEN,
