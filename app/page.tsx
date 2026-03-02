@@ -1,6 +1,5 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
 import Hero from '@/components/Hero';
 import CategoriasHome from '@/components/CategoriasHome';
 import ProductSlider from '@/components/ProductSlider';
@@ -41,7 +40,6 @@ export default function Page() {
       </div>
 
       {/* ===== CONTENIDO ===== */}
-      <Navbar />
       <Hero />
 
       {/* ===== CATEGORÍAS (NUEVO BLOQUE) ===== */}

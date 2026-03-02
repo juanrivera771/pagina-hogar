@@ -4,6 +4,8 @@ import Image from 'next/image';
 import { useRef, useState } from 'react';
 import { type Product } from '@/data/products';
 import ProductModal from './ProductModal';
+import { useCart } from '@/context/CartContext';
+import { useToast } from '@/context/ToastContext';
 
 const BRAND_GREEN = '#66D11F';
 const BRAND_DARK = '#0F2A43';
@@ -23,6 +25,10 @@ export default function ProductSlider({ products, title }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // 🔥 SOLO addToCart (quitamos openCart)
+  const { addToCart } = useCart();
+  const { showToast } = useToast();
+
   const scroll = (dir: 'left' | 'right') => {
     const el = containerRef.current;
     if (!el) return;
@@ -31,6 +37,23 @@ export default function ProductSlider({ products, title }: Props) {
       left: dir === 'right' ? 360 : -360,
       behavior: 'smooth',
     });
+  };
+
+  const handleAddToCart = (p: Product) => {
+    addToCart({
+      id: p.id,
+      name: p.name,
+      price: p.price,
+      image: p.img,
+    });
+
+    showToast({
+      name: p.name,
+      price: p.price,
+      image: p.img,
+    });
+
+    // ❌ Eliminado openCart()
   };
 
   return (
@@ -117,13 +140,10 @@ export default function ProductSlider({ products, title }: Props) {
                     {money(p.price)}
                   </p>
 
-                  <a
-                    href={`https://wa.me/573208709850?text=${encodeURIComponent(
-                      `Hola quiero este producto: ${p.name}`
-                    )}`}
+                  <button
+                    onClick={() => handleAddToCart(p)}
                     className="
                       mt-auto
-                      block text-center
                       rounded-lg py-2.5
                       font-semibold text-sm
                       transition-all duration-300
@@ -134,8 +154,8 @@ export default function ProductSlider({ products, title }: Props) {
                       color: BRAND_DARK,
                     }}
                   >
-                    Comprar ahora
-                  </a>
+                    Agregar al carrito
+                  </button>
 
                 </div>
               </article>
