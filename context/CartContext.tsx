@@ -9,8 +9,12 @@ import {
   useMemo,
 } from 'react'
 
+/* ================================
+   TYPES
+================================ */
+
 export interface CartItem {
-  id: string
+  id: number
   name: string
   price: number
   image: string
@@ -20,9 +24,9 @@ export interface CartItem {
 interface CartContextType {
   cart: CartItem[]
   addToCart: (product: Omit<CartItem, 'quantity'>) => void
-  removeFromCart: (id: string) => void
-  increaseQty: (id: string) => void
-  decreaseQty: (id: string) => void
+  removeFromCart: (id: number) => void
+  increaseQty: (id: number) => void
+  decreaseQty: (id: number) => void
   clearCart: () => void
   totalPrice: number
   totalItems: number
@@ -33,34 +37,55 @@ interface CartContextType {
   closeCart: () => void
 }
 
+/* ================================
+   CONTEXT
+================================ */
+
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
 
-  // 🔹 Cargar carrito desde localStorage
+  /* ================================
+     LOAD FROM LOCALSTORAGE
+  ================================= */
+
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
     const storedCart = localStorage.getItem('cart')
+
     if (storedCart) {
       try {
-        setCart(JSON.parse(storedCart))
+        const parsed: CartItem[] = JSON.parse(storedCart)
+        setCart(parsed)
       } catch {
         localStorage.removeItem('cart')
       }
     }
   }, [])
 
-  // 🔹 Guardar carrito cuando cambia
+  /* ================================
+     SAVE TO LOCALSTORAGE
+  ================================= */
+
   useEffect(() => {
+    if (typeof window === 'undefined') return
     localStorage.setItem('cart', JSON.stringify(cart))
   }, [cart])
 
-  // 🔹 Control del Drawer
+  /* ================================
+     DRAWER CONTROL
+  ================================= */
+
   const openCart = () => setIsCartOpen(true)
   const closeCart = () => setIsCartOpen(false)
 
-  // 🔹 Agregar producto (NO abre el carrito)
+  /* ================================
+     CART LOGIC
+  ================================= */
+
   const addToCart = (product: Omit<CartItem, 'quantity'>) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id)
@@ -77,11 +102,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })
   }
 
-  const removeFromCart = (id: string) => {
+  const removeFromCart = (id: number) => {
     setCart(prev => prev.filter(item => item.id !== id))
   }
 
-  const increaseQty = (id: string) => {
+  const increaseQty = (id: number) => {
     setCart(prev =>
       prev.map(item =>
         item.id === id
@@ -91,7 +116,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  const decreaseQty = (id: string) => {
+  const decreaseQty = (id: number) => {
     setCart(prev =>
       prev
         .map(item =>
@@ -105,21 +130,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCart = () => setCart([])
 
-  // 🔹 Totales optimizados
-  const totalPrice = useMemo(
-    () =>
-      cart.reduce(
-        (acc, item) => acc + item.price * item.quantity,
-        0
-      ),
-    [cart]
-  )
+  /* ================================
+     DERIVED VALUES (OPTIMIZED)
+  ================================= */
 
-  const totalItems = useMemo(
-    () =>
-      cart.reduce((acc, item) => acc + item.quantity, 0),
-    [cart]
-  )
+  const totalPrice = useMemo(() => {
+    return cart.reduce(
+      (acc, item) => acc + item.price * item.quantity,
+      0
+    )
+  }, [cart])
+
+  const totalItems = useMemo(() => {
+    return cart.reduce((acc, item) => acc + item.quantity, 0)
+  }, [cart])
+
+  /* ================================
+     PROVIDER
+  ================================= */
 
   return (
     <CartContext.Provider
@@ -142,10 +170,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
   )
 }
 
+/* ================================
+   HOOK
+================================ */
+
 export function useCart() {
   const context = useContext(CartContext)
+
   if (!context) {
     throw new Error('useCart must be used inside CartProvider')
   }
+
   return context
 }

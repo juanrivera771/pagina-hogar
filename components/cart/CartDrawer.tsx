@@ -30,6 +30,40 @@ export default function CartDrawer() {
       .join('\n')}\n\nTotal: $${total.toLocaleString()}`
   );
 
+  // 🔥 FUNCIÓN QUE DESCUENTA STOCK EN EL BACKEND
+  async function descontarStock(id: string, quantity: number) {
+    const res = await fetch('/api/products', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id, quantity }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.error || 'Error al actualizar stock');
+      return false;
+    }
+
+    return true;
+  }
+
+  // 🛒 CUANDO EL USUARIO FINALIZA COMPRA
+  async function handleCheckout() {
+    for (const item of cart) {
+      const ok = await descontarStock(item.id, item.quantity);
+      if (!ok) return;
+    }
+
+    // Si todo salió bien → abrir WhatsApp
+    window.open(
+      `https://wa.me/573144581356?text=${whatsappMessage}`,
+      '_blank'
+    );
+  }
+
   return (
     <AnimatePresence>
       {isCartOpen && (
@@ -128,13 +162,12 @@ export default function CartDrawer() {
               </div>
 
               {cart.length > 0 && (
-                <a
-                  href={`https://wa.me/573144581356?text=${whatsappMessage}`}
-                  target="_blank"
-                  className="block text-center bg-black text-white py-3 rounded-full hover:opacity-90 transition"
+                <button
+                  onClick={handleCheckout}
+                  className="block w-full text-center bg-black text-white py-3 rounded-full hover:opacity-90 transition"
                 >
                   Pedir por WhatsApp
-                </a>
+                </button>
               )}
             </div>
           </motion.aside>

@@ -3,10 +3,9 @@
 import Image from 'next/image';
 import { useMemo, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { products, categories, type Product } from '@/data/products';
 import ProductModal from '@/components/ProductModal';
+import type { Product } from '@/types/product'; // 🔥 usamos el tipo centralizado
 
-const BRAND_GREEN = '#66D11F';
 const BRAND_DARK = '#0F2A43';
 
 const moneyFormatter = new Intl.NumberFormat('es-CO', {
@@ -26,6 +25,9 @@ const normalize = (text: string) =>
 export default function CatalogoPage() {
   const searchParams = useSearchParams();
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [q, setQ] = useState('');
   const [sort, setSort] =
     useState<'relevancia' | 'precio-asc' | 'precio-desc'>('relevancia');
@@ -33,11 +35,31 @@ export default function CatalogoPage() {
 
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
-  const allCategories = useMemo(
-    () => ['Todas', ...categories],
-    []
-  );
+  // 🔥 Cargar productos desde API
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const res = await fetch('/api/products', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Error al obtener productos');
+        const data = await res.json();
+        setProducts(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
 
+    loadProducts();
+  }, []);
+
+  // 🔥 Categorías dinámicas
+  const allCategories = useMemo(() => {
+    const unique = Array.from(new Set(products.map((p) => p.category)));
+    return ['Todas', ...unique];
+  }, [products]);
+
+  // 🔥 Leer categoría desde URL
   useEffect(() => {
     const categoriaURL = searchParams.get('categoria');
 
@@ -52,6 +74,7 @@ export default function CatalogoPage() {
     }
   }, [searchParams, allCategories]);
 
+  // 🔥 Filtro + ordenamiento
   const filtered = useMemo(() => {
     let items = products.filter((p) =>
       (cat === 'Todas' || p.category === cat) &&
@@ -65,7 +88,7 @@ export default function CatalogoPage() {
       items = [...items].sort((a, b) => b.price - a.price);
 
     return items;
-  }, [q, sort, cat]);
+  }, [products, q, sort, cat]);
 
   return (
     <div className="min-h-dvh bg-white text-slate-900">
@@ -127,47 +150,68 @@ export default function CatalogoPage() {
           </select>
         </div>
 
-        {/* GRID PRODUCTOS */}
+        {/* GRID */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filtered.map((p: Product) => (
-            <article
-              key={p.id}
-              onClick={() => setSelectedProduct(p)}
-              className="cursor-pointer rounded-2xl border border-slate-200 bg-white shadow-sm hover:shadow-md transition"
-            >
-              <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-slate-100">
-                <Image
-                  src={p.img}
-                  alt={p.name}
-                  fill
-                  className="object-cover"
-                />
-              </div>
-
-              <div className="p-4">
-                <h3 className="font-semibold leading-snug line-clamp-2">
-                  {p.name}
-                </h3>
-
-                <div className="mt-2 flex items-center justify-between">
-                  <span
-                    className="text-lg font-extrabold"
-                    style={{ color: BRAND_DARK }}
-                  >
-                    {money(p.price)}
-                  </span>
-
-                  <span className="text-xs text-slate-500">
-                    {p.category}
-                  </span>
+          {loading ? (
+            <p>Cargando productos...</p>
+          ) : (
+            filtered.map((p) => (
+              <article
+                key={p.id}
+                onClick={() => p.stock !== 0 && setSelectedProduct(p)}
+                className={`rounded-2xl border bg-white shadow-sm transition
+                  ${p.stock === 0
+                    ? 'opacity-60 cursor-not-allowed'
+                    : 'cursor-pointer hover:shadow-md'}`}
+              >
+                <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-slate-100">
+                  <Image
+                    src={p.img}
+                    alt={p.name}
+                    fill
+                    className="object-cover"
+                  />
                 </div>
-              </div>
-            </article>
-          ))}
+
+                <div className="p-4">
+                  <h3 className="font-semibold leading-snug line-clamp-2">
+                    {p.name}
+                  </h3>
+
+                  <div className="mt-2 flex items-center justify-between">
+                    <span
+                      className="text-lg font-extrabold"
+                      style={{ color: BRAND_DARK }}
+                    >
+                      {money(p.price)}
+                    </span>
+
+                    <span className="text-xs text-slate-500">
+                      {p.category}
+                    </span>
+                  </div>
+
+                  {/* 🔥 STOCK VISUAL */}
+                  <div className="mt-2 text-xs font-semibold">
+                    {p.stock === 0 ? (
+                      <span className="text-red-500">Sin stock</span>
+                    ) : p.stock && p.stock <= 5 ? (
+                      <span className="text-orange-500">
+                        ⚠ Últimas {p.stock} unidades
+                      </span>
+                    ) : (
+                      <span className="text-green-600">
+                        {p.stock} disponibles
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))
+          )}
         </div>
       </div>
 
-      {/* MODAL GLOBAL */}
       <ProductModal
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}

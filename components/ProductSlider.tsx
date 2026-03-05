@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import { useRef, useState } from 'react';
-import { type Product } from '@/data/products';
+import type { Product } from '@/types/product';
 import ProductModal from './ProductModal';
 import { useCart } from '@/context/CartContext';
 import { useToast } from '@/context/ToastContext';
@@ -39,6 +39,8 @@ export default function ProductSlider({ products, title }: Props) {
   };
 
   const handleAddToCart = (p: Product) => {
+    if (p.stock === 0) return;
+
     addToCart({
       id: p.id,
       name: p.name,
@@ -67,7 +69,6 @@ export default function ProductSlider({ products, title }: Props) {
                 {title}
               </h2>
 
-              {/* Flechas solo desktop */}
               <div className="hidden md:flex gap-3">
                 <button
                   onClick={() => scroll('left')}
@@ -100,21 +101,23 @@ export default function ProductSlider({ products, title }: Props) {
             {products.map((p) => (
               <article
                 key={p.id}
-                className="
+                className={`
                   snap-start shrink-0
                   w-[85%] sm:w-[45%] lg:w-[23%]
                   rounded-2xl
                   bg-white
                   border border-slate-200/60
-                  hover:shadow-xl
                   transition-all duration-300
                   group
                   flex flex-col
-                "
+                  ${p.stock === 0
+                    ? 'opacity-60'
+                    : 'hover:shadow-xl'}
+                `}
               >
                 <div
                   className="relative aspect-[4/3] overflow-hidden rounded-t-2xl bg-slate-100 cursor-pointer"
-                  onClick={() => setSelectedProduct(p)}
+                  onClick={() => p.stock !== 0 && setSelectedProduct(p)}
                 >
                   <Image
                     src={p.img}
@@ -128,7 +131,7 @@ export default function ProductSlider({ products, title }: Props) {
                 <div className="p-4 flex flex-col flex-1">
 
                   <h3
-                    onClick={() => setSelectedProduct(p)}
+                    onClick={() => p.stock !== 0 && setSelectedProduct(p)}
                     className="text-sm font-medium text-slate-700 line-clamp-2 cursor-pointer"
                   >
                     {p.name}
@@ -141,8 +144,24 @@ export default function ProductSlider({ products, title }: Props) {
                     {money(p.price)}
                   </p>
 
+                  {/* 🔥 STOCK VISUAL */}
+                  <div className="mt-1 text-xs font-semibold">
+                    {p.stock === 0 ? (
+                      <span className="text-red-500">Sin stock</span>
+                    ) : p.stock && p.stock <= 5 ? (
+                      <span className="text-orange-500">
+                        ⚠ Últimas {p.stock} unidades
+                      </span>
+                    ) : (
+                      <span className="text-green-600">
+                        {p.stock} disponibles
+                      </span>
+                    )}
+                  </div>
+
                   <button
                     onClick={() => handleAddToCart(p)}
+                    disabled={p.stock === 0}
                     className="
                       mt-auto
                       rounded-lg py-2.5
@@ -150,13 +169,15 @@ export default function ProductSlider({ products, title }: Props) {
                       transition-all duration-300
                       hover:scale-[1.02]
                       active:scale-[0.98]
+                      disabled:opacity-50
+                      disabled:cursor-not-allowed
                     "
                     style={{
                       backgroundColor: BRAND_GREEN,
                       color: BRAND_DARK,
                     }}
                   >
-                    Agregar al carrito
+                    {p.stock === 0 ? 'Sin stock' : 'Agregar al carrito'}
                   </button>
 
                 </div>

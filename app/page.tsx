@@ -1,12 +1,32 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Hero from '@/components/Hero';
 import CategoriasHome from '@/components/CategoriasHome';
 import ProductSlider from '@/components/ProductSlider';
 import Footer from '@/components/Footer';
-import { products } from '@/data/products';
 
 export default function Page() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadProducts() {
+      try {
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('Error al obtener productos');
+        const data = await res.json();
+        setProducts(data);
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadProducts();
+  }, []);
+
   return (
     <div className="relative min-h-dvh text-slate-900">
 
@@ -42,7 +62,7 @@ export default function Page() {
       {/* ===== CONTENIDO ===== */}
       <Hero />
 
-      {/* ===== CATEGORÍAS (NUEVO BLOQUE) ===== */}
+      {/* ===== CATEGORÍAS ===== */}
       <CategoriasHome />
 
       {/* ===== SLIDER MÁS VENDIDOS ===== */}
@@ -50,10 +70,14 @@ export default function Page() {
         id="masvendidos"
         className="mx-auto max-w-7xl px-4 py-16"
       >
-        <ProductSlider
-          products={products}
-          title="Más vendidos"
-        />
+        {loading ? (
+          <p className="text-center">Cargando productos...</p>
+        ) : (
+          <ProductSlider
+            products={products}
+            title="Más vendidos"
+          />
+        )}
       </section>
 
       <Footer />
