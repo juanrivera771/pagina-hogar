@@ -10,6 +10,7 @@ export default function CartDrawer() {
     removeFromCart,
     increaseQty,
     decreaseQty,
+    clearCart,
     isCartOpen,
     closeCart,
   } = useCart();
@@ -20,17 +21,26 @@ export default function CartDrawer() {
   );
 
   const whatsappMessage = encodeURIComponent(
-    `Hola 👋 quiero hacer este pedido:\n\n${cart
+    `Hola JXF Colombia 👋 quiero hacer este pedido:\n\n${cart
       .map(
         (item) =>
-          `• ${item.name} x${item.quantity} - $${(
-            item.price * item.quantity
-          ).toLocaleString()}`
+          `• ${item.name}\n` +
+          `  Cantidad: ${item.quantity}\n` +
+          `  Subtotal: $${(item.price * item.quantity).toLocaleString()}`
       )
-      .join('\n')}\n\nTotal: $${total.toLocaleString()}`
+      .join('\n\n')}\n\n` +
+      `TOTAL DEL PEDIDO: $${total.toLocaleString()}\n\n` +
+      `Datos para el envío:\n` +
+      `Nombre:\n` +
+      `Ciudad:\n` +
+      `Dirección:\n` +
+      `Teléfono:`
   );
 
-  // 🔥 FUNCIÓN QUE DESCUENTA STOCK EN EL BACKEND
+  /* ================================
+  DESCONTAR STOCK EN BACKEND
+  ================================= */
+
   async function descontarStock(id: string, quantity: number) {
     const res = await fetch('/api/products', {
       method: 'POST',
@@ -50,18 +60,25 @@ export default function CartDrawer() {
     return true;
   }
 
-  // 🛒 CUANDO EL USUARIO FINALIZA COMPRA
+  /* ================================
+  CHECKOUT
+  ================================= */
+
   async function handleCheckout() {
+    if (cart.length === 0) return;
+
     for (const item of cart) {
       const ok = await descontarStock(String(item.id), item.quantity);
       if (!ok) return;
     }
 
-    // Si todo salió bien → abrir WhatsApp
     window.open(
       `https://wa.me/573165119987?text=${whatsappMessage}`,
       '_blank'
     );
+
+    clearCart();
+    closeCart();
   }
 
   return (
@@ -112,6 +129,7 @@ export default function CartDrawer() {
                 >
                   <div>
                     <h3 className="font-medium text-sm">{item.name}</h3>
+
                     <p className="text-slate-500 text-xs mt-1">
                       ${item.price.toLocaleString()}
                     </p>
