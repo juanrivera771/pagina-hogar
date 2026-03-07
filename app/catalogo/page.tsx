@@ -1,6 +1,7 @@
 'use client'
 
 export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
 
 import Image from 'next/image'
 import { useMemo, useState, useEffect } from 'react'
@@ -23,6 +24,7 @@ const normalize = (text: string) =>
 
 export default function CatalogoPage() {
   const searchParams = useSearchParams()
+  const categoriaURL = searchParams.get('categoria')
 
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
@@ -37,7 +39,9 @@ export default function CatalogoPage() {
   useEffect(() => {
     const loadProducts = async () => {
       try {
-        const res = await fetch('/api/products')
+        const res = await fetch('/api/products', {
+          cache: 'no-store',
+        })
 
         if (!res.ok) throw new Error('Error cargando productos')
 
@@ -60,8 +64,6 @@ export default function CatalogoPage() {
   }, [products])
 
   useEffect(() => {
-    const categoriaURL = searchParams.get('categoria')
-
     if (!categoriaURL) return
 
     const match = allCategories.find(
@@ -69,7 +71,7 @@ export default function CatalogoPage() {
     )
 
     if (match) setCat(match)
-  }, [allCategories])
+  }, [categoriaURL, allCategories])
 
   const filtered = useMemo(() => {
     let items = products.filter(
