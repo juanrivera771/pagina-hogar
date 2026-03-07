@@ -54,7 +54,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // 🔥 Bloquear scroll cuando menú móvil está abierto
+  // Bloquear scroll cuando menú móvil está abierto
   useEffect(() => {
     if (mobileOpen) {
       document.body.style.overflow = 'hidden';
@@ -212,6 +212,13 @@ function CartButton({
   totalItems: number;
   openCart: () => void;
 }) {
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     <button
       onClick={openCart}
@@ -231,7 +238,7 @@ function CartButton({
         />
       </svg>
 
-      {totalItems > 0 && (
+      {mounted && totalItems > 0 && (
         <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full font-semibold">
           {totalItems}
         </span>

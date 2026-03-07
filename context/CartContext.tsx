@@ -10,64 +10,63 @@ import {
 } from 'react'
 
 /* ================================
-   TYPES
+TYPES
 ================================ */
 
 export interface CartItem {
-  id: number
+  id: string
   name: string
   price: number
   image: string
   quantity: number
+  stock?: number
 }
 
 interface CartContextType {
   cart: CartItem[]
   addToCart: (product: Omit<CartItem, 'quantity'>) => void
-  removeFromCart: (id: number) => void
-  increaseQty: (id: number) => void
-  decreaseQty: (id: number) => void
+  removeFromCart: (id: string) => void
+  increaseQty: (id: string) => void
+  decreaseQty: (id: string) => void
   clearCart: () => void
   totalPrice: number
   totalItems: number
 
-  // Drawer control
   isCartOpen: boolean
   openCart: () => void
   closeCart: () => void
 }
 
 /* ================================
-   CONTEXT
+CONTEXT
 ================================ */
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
+/* ================================
+PROVIDER
+================================ */
+
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([])
+  /* ================================
+  STATE (INIT FROM LOCALSTORAGE)
+  ================================= */
+
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    if (typeof window === 'undefined') return []
+
+    try {
+      const stored = localStorage.getItem('cart')
+      return stored ? JSON.parse(stored) : []
+    } catch {
+      return []
+    }
+  })
+
   const [isCartOpen, setIsCartOpen] = useState(false)
 
   /* ================================
-     LOAD FROM LOCALSTORAGE
-  ================================= */
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-
-    const storedCart = localStorage.getItem('cart')
-
-    if (storedCart) {
-      try {
-        const parsed: CartItem[] = JSON.parse(storedCart)
-        setCart(parsed)
-      } catch {
-        localStorage.removeItem('cart')
-      }
-    }
-  }, [])
-
-  /* ================================
-     SAVE TO LOCALSTORAGE
+  SAVE TO LOCALSTORAGE
   ================================= */
 
   useEffect(() => {
@@ -76,21 +75,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart])
 
   /* ================================
-     DRAWER CONTROL
+  DRAWER CONTROL
   ================================= */
 
   const openCart = () => setIsCartOpen(true)
   const closeCart = () => setIsCartOpen(false)
 
   /* ================================
-     CART LOGIC
+  CART LOGIC
   ================================= */
 
   const addToCart = (product: Omit<CartItem, 'quantity'>) => {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id)
 
+      const stock = product.stock ?? Infinity
+
       if (existing) {
+        if (existing.quantity >= stock) {
+          alert('No hay más stock disponible')
+          return prev
+        }
+
         return prev.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -98,25 +104,37 @@ export function CartProvider({ children }: { children: ReactNode }) {
         )
       }
 
+      if (stock <= 0) {
+        alert('Producto sin stock')
+        return prev
+      }
+
       return [...prev, { ...product, quantity: 1 }]
     })
   }
 
-  const removeFromCart = (id: number) => {
+  const removeFromCart = (id: string) => {
     setCart(prev => prev.filter(item => item.id !== id))
   }
 
-  const increaseQty = (id: number) => {
+  const increaseQty = (id: string) => {
     setCart(prev =>
-      prev.map(item =>
-        item.id === id
-          ? { ...item, quantity: item.quantity + 1 }
-          : item
-      )
+      prev.map(item => {
+        if (item.id !== id) return item
+
+        const stock = item.stock ?? Infinity
+
+        if (item.quantity >= stock) {
+          alert('Stock máximo alcanzado')
+          return item
+        }
+
+        return { ...item, quantity: item.quantity + 1 }
+      })
     )
   }
 
-  const decreaseQty = (id: number) => {
+  const decreaseQty = (id: string) => {
     setCart(prev =>
       prev
         .map(item =>
@@ -128,17 +146,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
     )
   }
 
-  const clearCart = () => setCart([])
+  const clearCart = () => {
+    setCart([])
+  }
 
   /* ================================
-     DERIVED VALUES (OPTIMIZED)
+  DERIVED VALUES
   ================================= */
 
   const totalPrice = useMemo(() => {
-    return cart.reduce(
-      (acc, item) => acc + item.price * item.quantity,
-      0
-    )
+    return cart.reduce((acc, item) => acc + item.price * item.quantity, 0)
   }, [cart])
 
   const totalItems = useMemo(() => {
@@ -146,7 +163,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart])
 
   /* ================================
-     PROVIDER
+  PROVIDER VALUE
   ================================= */
 
   return (
@@ -171,7 +188,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 }
 
 /* ================================
-   HOOK
+HOOK
 ================================ */
 
 export function useCart() {

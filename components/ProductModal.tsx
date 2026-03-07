@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react'
 import Image from 'next/image'
-import { Product } from '@/data/products'
+import { Product } from '@/types/product'
 import { useCart } from '@/context/CartContext'
 import { useToast } from '@/context/ToastContext'
 
@@ -12,11 +12,10 @@ type Props = {
 }
 
 export default function ProductModal({ product, onClose }: Props) {
-  const { addToCart }
- = useCart()
+  const { addToCart } = useCart()
   const { showToast } = useToast()
 
-  // 🔥 Bloquea scroll del body cuando el modal está abierto
+  // Bloquea el scroll del body cuando el modal está abierto
   useEffect(() => {
     if (product) {
       document.body.style.overflow = 'hidden'
@@ -32,16 +31,27 @@ export default function ProductModal({ product, onClose }: Props) {
   if (!product) return null
 
   const handleAddToCart = () => {
+
+    const stock = Number(product.stock)
+    const price = Number(product.price)
+
+    // Validación real de stock
+    if (!stock || stock <= 0) {
+      alert('Producto sin stock')
+      return
+    }
+
     addToCart({
       id: product.id,
       name: product.name,
-      price: product.price,
+      price: price,
       image: product.img,
+      stock: stock,
     })
 
     showToast({
       name: product.name,
-      price: product.price,
+      price: price,
       image: product.img,
     })
 
@@ -92,11 +102,16 @@ export default function ProductModal({ product, onClose }: Props) {
           </h2>
 
           <p className="text-lg font-semibold mt-2">
-            ${product.price.toLocaleString()}
+            ${Number(product.price).toLocaleString()}
           </p>
 
           <p className="text-sm text-gray-600 mt-4 leading-relaxed">
             {product.description}
+          </p>
+
+          {/* Mostrar stock */}
+          <p className="text-sm text-gray-500 mt-3">
+            Stock disponible: {Number(product.stock)}
           </p>
 
           <button

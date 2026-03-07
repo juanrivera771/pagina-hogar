@@ -53,13 +53,13 @@ export default function CartDrawer() {
   // 🛒 CUANDO EL USUARIO FINALIZA COMPRA
   async function handleCheckout() {
     for (const item of cart) {
-      const ok = await descontarStock(item.id, item.quantity);
+      const ok = await descontarStock(String(item.id), item.quantity);
       if (!ok) return;
     }
 
     // Si todo salió bien → abrir WhatsApp
     window.open(
-      `https://wa.me/573144581356?text=${whatsappMessage}`,
+      `https://wa.me/573165119987?text=${whatsappMessage}`,
       '_blank'
     );
   }
