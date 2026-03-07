@@ -1,24 +1,56 @@
-import "./globals.css";
-import { ReactNode } from "react";
-import { CartProvider } from "@/context/CartContext";
-import { ToastProvider } from "@/context/ToastContext";
-import Navbar from "@/components/Navbar";
-import CartDrawer from "@/components/cart/CartDrawer";
+import "./globals.css"
+import { ReactNode } from "react"
+import type { Metadata, Viewport } from "next"
 
-export const metadata = {
+import { CartProvider } from "@/context/CartContext"
+import { ToastProvider } from "@/context/ToastContext"
+
+import Navbar from "@/components/Navbar"
+import CartDrawer from "@/components/cart/CartDrawer"
+
+/* 🔎 SEO GLOBAL */
+
+export const metadata: Metadata = {
   metadataBase: new URL("https://jxf.co"),
+
   title: {
     default: "JXF Colombia · Hogar inteligente, útil y económico",
     template: "%s | JXF Colombia",
   },
+
   description:
     "Compra fácil por WhatsApp. Envío nacional y pago contraentrega. Productos útiles, virales y económicos para tu hogar.",
+
+  keywords: [
+    "JXF Colombia",
+    "hogar inteligente",
+    "productos virales",
+    "gadgets hogar",
+    "tienda online Colombia",
+    "comprar por WhatsApp",
+  ],
+
+  authors: [{ name: "JXF Colombia" }],
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-image-preview": "large",
+      "max-video-preview": -1,
+      "max-snippet": -1,
+    },
+  },
+
   openGraph: {
     title: "JXF Colombia · Hogar inteligente",
     description:
       "Útil, viral y económico. Envío nacional y pago contraentrega.",
     url: "https://jxf.co",
     siteName: "JXF Colombia",
+
     images: [
       {
         url: "/jxf-logo.png",
@@ -27,9 +59,11 @@ export const metadata = {
         alt: "JXF Colombia Hogar Inteligente",
       },
     ],
+
     locale: "es_CO",
     type: "website",
   },
+
   twitter: {
     card: "summary_large_image",
     title: "JXF Colombia · Hogar inteligente",
@@ -37,23 +71,27 @@ export const metadata = {
       "Útil, viral y económico. Compra fácil por WhatsApp.",
     images: ["/jxf-logo.png"],
   },
+
   icons: {
     icon: "/favicon.ico",
   },
-};
+}
 
-/* ✅ Viewport mejorado para móviles modernos */
-export const viewport = {
+/* 📱 VIEWPORT MODERNO */
+
+export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   minimumScale: 1,
   viewportFit: "cover",
-};
+}
+
+/* 🌐 ROOT LAYOUT */
 
 export default function RootLayout({
   children,
 }: {
-  children: ReactNode;
+  children: ReactNode
 }) {
   return (
     <html lang="es" suppressHydrationWarning>
@@ -62,18 +100,18 @@ export default function RootLayout({
         <CartProvider>
           <ToastProvider>
 
-            {/* 🔥 Navbar Global */}
+            {/* 🔝 Navbar Global */}
             <Navbar />
 
-            {/* 🔥 Contenido dinámico */}
+            {/* 📦 Contenido dinámico */}
             <main className="min-h-screen">
               {children}
             </main>
 
-            {/* 🔥 Cart Drawer Global */}
+            {/* 🛒 Cart Drawer Global */}
             <CartDrawer />
 
-            {/* 🔥 Botón flotante WhatsApp */}
+            {/* 💬 Botón flotante WhatsApp */}
             <a
               href="https://wa.me/573208709850?text=Hola%20JXF%20Colombia%2C%20quiero%20comprar%20para%20mi%20hogar"
               aria-label="Chatea por WhatsApp"
@@ -81,7 +119,7 @@ export default function RootLayout({
               rel="noopener noreferrer"
               className="fixed bottom-4 right-4 z-[60] group"
             >
-              {/* Tooltip solo visible en desktop */}
+              {/* Tooltip desktop */}
               <span className="hidden sm:block absolute right-16 top-1/2 -translate-y-1/2 bg-black text-white text-xs px-3 py-1 rounded-full opacity-0 group-hover:opacity-100 transition">
                 Escríbenos
               </span>
@@ -101,5 +139,5 @@ export default function RootLayout({
 
       </body>
     </html>
-  );
+  )
 }
