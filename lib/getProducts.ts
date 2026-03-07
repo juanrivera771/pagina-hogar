@@ -4,11 +4,12 @@ import path from "path";
 export type Product = {
   id: string;
   name: string;
-  description: string;
   price: string;
+  stock: string;
   img: string;
   category: string;
-  stock: string;
+  tag: string;
+  description: string;
 };
 
 export function getProducts(): Product[] {
@@ -21,17 +22,26 @@ export function getProducts(): Product[] {
   return lines
     .filter(Boolean)
     .map((line) => {
-      const [id, name, description, price, img, category, stock] =
-        line.split(",");
+      const [
+        id,
+        name,
+        price,
+        stock,
+        img,
+        category,
+        tag,
+        description,
+      ] = line.split(";"); // 👈 cambiar coma por ;
 
       return {
         id,
         name,
-        description,
         price,
+        stock,
         img,
         category,
-        stock,
+        tag,
+        description,
       };
     });
 }
