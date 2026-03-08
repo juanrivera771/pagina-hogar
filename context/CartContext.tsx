@@ -48,31 +48,40 @@ PROVIDER
 ================================ */
 
 export function CartProvider({ children }: { children: ReactNode }) {
+
   /* ================================
-  STATE (INIT FROM LOCALSTORAGE)
+  STATE
   ================================= */
 
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    if (typeof window === 'undefined') return []
-
-    try {
-      const stored = localStorage.getItem('cart')
-      return stored ? JSON.parse(stored) : []
-    } catch {
-      return []
-    }
-  })
-
+  const [cart, setCart] = useState<CartItem[]>([])
   const [isCartOpen, setIsCartOpen] = useState(false)
+  const [isLoaded, setIsLoaded] = useState(false)
 
   /* ================================
-  SAVE TO LOCALSTORAGE
+  LOAD CART FROM LOCALSTORAGE
   ================================= */
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
+    try {
+      const stored = localStorage.getItem('cart')
+      if (stored) {
+        setCart(JSON.parse(stored))
+      }
+    } catch (error) {
+      console.error('Error loading cart', error)
+    } finally {
+      setIsLoaded(true)
+    }
+  }, [])
+
+  /* ================================
+  SAVE CART
+  ================================= */
+
+  useEffect(() => {
+    if (!isLoaded) return
     localStorage.setItem('cart', JSON.stringify(cart))
-  }, [cart])
+  }, [cart, isLoaded])
 
   /* ================================
   DRAWER CONTROL
@@ -163,7 +172,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [cart])
 
   /* ================================
-  PROVIDER VALUE
+  PROVIDER
   ================================= */
 
   return (
