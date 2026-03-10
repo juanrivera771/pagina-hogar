@@ -2,7 +2,8 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { Product } from '@/types/product'
 
 const BRAND_DARK = '#0F2A43'
@@ -16,10 +17,28 @@ const moneyFormatter = new Intl.NumberFormat('es-CO', {
 const money = (x: number) => moneyFormatter.format(x)
 
 export default function CatalogoClient({ products }: { products: Product[] }) {
+
+  const searchParams = useSearchParams()
+  const categoriaURL = searchParams.get('categoria')
+
   const [q, setQ] = useState('')
   const [sort, setSort] =
     useState<'relevancia' | 'precio-asc' | 'precio-desc'>('relevancia')
+
   const [cat, setCat] = useState('Todas')
+
+  /* leer categoria desde la URL */
+  useEffect(() => {
+
+    if (!categoriaURL) return
+
+    const formatted =
+      categoriaURL.charAt(0).toUpperCase() +
+      categoriaURL.slice(1)
+
+    setCat(formatted)
+
+  }, [categoriaURL])
 
   const allCategories = useMemo(() => {
     const unique = Array.from(new Set(products.map((p) => p.category)))
@@ -55,6 +74,7 @@ export default function CatalogoClient({ products }: { products: Product[] }) {
 
         {/* filtros */}
         <div className="mt-6 grid gap-3 sm:grid-cols-3">
+
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -88,11 +108,14 @@ export default function CatalogoClient({ products }: { products: Product[] }) {
             <option value="precio-asc">Precio: menor a mayor</option>
             <option value="precio-desc">Precio: mayor a menor</option>
           </select>
+
         </div>
 
         {/* grid productos */}
         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+
           {filtered.map((p) => (
+
             <Link
               key={p.id}
               href={`/catalogo/${p.slug}`}
@@ -102,7 +125,9 @@ export default function CatalogoClient({ products }: { products: Product[] }) {
                   : 'cursor-pointer hover:shadow-md'
               }`}
             >
+
               <article>
+
                 <div className="relative aspect-square overflow-hidden rounded-t-2xl bg-slate-100">
                   <Image
                     src={p.img}
@@ -113,11 +138,13 @@ export default function CatalogoClient({ products }: { products: Product[] }) {
                 </div>
 
                 <div className="p-4">
+
                   <h3 className="font-semibold line-clamp-2">
                     {p.name}
                   </h3>
 
                   <div className="mt-2 flex justify-between">
+
                     <span
                       className="text-lg font-extrabold"
                       style={{ color: BRAND_DARK }}
@@ -128,11 +155,17 @@ export default function CatalogoClient({ products }: { products: Product[] }) {
                     <span className="text-xs text-slate-500">
                       {p.category}
                     </span>
+
                   </div>
+
                 </div>
+
               </article>
+
             </Link>
+
           ))}
+
         </div>
 
       </div>
